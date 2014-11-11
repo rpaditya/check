@@ -25,7 +25,8 @@ if (defined $reportwhich){
 
 use Net::NNTP;
 
-my $nntp = Net::NNTP->new($host, Timeout=>$timeout, Debug=>1 );
+my $nntp = Net::NNTP->new($host, Timeout=>$timeout);
+#my $nntp = Net::NNTP->new($host, Timeout=>$timeout, Debug=>1 );
 if (defined $nntp){
     $nntp->quit;
     if ($reportwhich eq "success"){
