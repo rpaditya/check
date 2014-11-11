@@ -3,7 +3,7 @@
 use strict;
 local $| = 1;
 
-my($host, $timeout) = @ARGV;
+my($host, $timeout, $reportwhich) = @ARGV;
 
 if (defined $host){
     chomp($host);
@@ -17,12 +17,22 @@ if (defined $timeout){
     $timeout = 5;
 }
 
+if (defined $reportwhich){
+    chomp($reportwhich);
+} else {
+    $reportwhich = "success";
+}
+
 use Net::NNTP;
 
 my $nntp = Net::NNTP->new($host, Timeout=>$timeout, Debug=>1 );
 if (defined $nntp){
     $nntp->quit;
-    print "Connection to ${host} succeeded in less than ${timeout} secs!\n";
+    if ($reportwhich eq "success"){
+	print "Connection to ${host} succeeded in less than ${timeout} secs!\n";
+    }
 } else {
-    # print "Connection to ${host} timed out in ${timeout} secs\n";
+    if ($reportwhich eq "failure"){
+	print "Connection to ${host} timed out in ${timeout} secs\n";
+    }
 }
