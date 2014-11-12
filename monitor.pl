@@ -1,24 +1,8 @@
-# Copyright (C) 2000-2005 by R.P. Aditya <aditya@grot.org>
-# (See "License", below.)
 #
-# License:
-#    This program is free software; you can redistribute it and/or
-#    modify it under the terms of the GNU General Public License
-#    as published by the Free Software Foundation; either version 2
-#    of the License, or (at your option) any later version.
+# rudimentary functions used by lots of tools
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You may have received a copy of the GNU General Public License
-#    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
-#    USA.
-#
-#    An on-line copy of the GNU General Public License can be found
-#    http://www.fsf.org/copyleft/gpl.html.
+# include it in your code as
+# require '/home/check/bin/monitor.pl';
 
 use strict;
 local $| = 1;
@@ -30,9 +14,10 @@ use Time::HiRes;
 use LWP::UserAgent;
 use Sys::Syslog;
 #Sys::Syslog::setlogsock('unix');
-use RRDs;
 
+use RRDs;
 $config->{'STEP'} = 300;
+
 $config->{'DEBUG'} = 0;
 $config->{'timeout'} = 15;
 if (! defined $main::config->{'logfacility'}){
@@ -67,22 +52,6 @@ sub updateRRD {
     if (! -e $RRD){
         return(1, "could not find ${RRD}");
     } else {
-#        my($lastUpdate) = RRDs::last($RRD);
-#        if (my $error = RRDs::error()){
-#            return(1, "RRDs::last failed on $RRD: $error");
-#        }
-#
-#                #when the last update should have minimally happened
-#        my($difference) = (time - $config->{'STEP'} + $config->{'timeout'});
-#
-#                #if the last update was more recent (>) when it should have happened, skip
-#        if ($lastUpdate > $difference){
-#            if ($config->{'DEBUG'} >= 10){
-#                notify('err', "skip $RRD lastUpdate $lastUpdate > $difference");
-#            }
-#            return (1, "skip $RRD lastUpdate $lastUpdate > $difference");
-#        }
-
         my($vallist) = $t . ":" . join(':', @vals);
 
         RRDs::update("$RRD", "$vallist");
