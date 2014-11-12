@@ -3,37 +3,51 @@
 use strict;
 local $| = 1;
 
-my($host, $timeout, $reportwhich) = @ARGV;
+use Getopt::Std;
 
-if (defined $host){
-    chomp($host);
-} else {
-    $host = $ENV{'NNTPSERVER'};
+require "$ENV{'HOME'}/projects/check/monitor.pl";
+
+my(%opts);
+getopts('h:t:r:D:', \%opts);    #Values in %opts
+
+our $config;
+$config->{'DEBUG'} = $opts{'D'} || 0;
+if ($config->{'DEBUG'}){
+    notify('debug', "DEBUG set to level $config->{'DEBUG'}");
 }
 
+$config->{'program'} = 'check_nntp';
+$config->{'version'} = "0.01";
+$config->{'whom'} = "noc\@grot.org";
 
-if (defined $timeout){
-} else {
-    $timeout = 5;
+if (! defined $config->{'logfacility'}){
+    $config->{'logfacility'} = 'user';
 }
 
-if (defined $reportwhich){
-    chomp($reportwhich);
-} else {
-    $reportwhich = "success";
-}
+openlog($config->{'program'},'cons,pid', $config->{'logfacility'});
+
+#my($host, $timeout, $reportwhich) = @ARGV;
+
+$config->{'host'} = $opts{'h'} || $ENV{'NNTPSERVER'};
+$config->{'timeout'} = $opts{'t'} || 5;
+$config->{'reportwhich'} = $opts{'r'} || "success";
 
 use Net::NNTP;
 
-my $nntp = Net::NNTP->new($host, Timeout=>$timeout);
-#my $nntp = Net::NNTP->new($host, Timeout=>$timeout, Debug=>1 );
+my $nntp = Net::NNTP->new(
+    $config->{'host'}, 
+    Timeout=>$config->{'timeout'}, 
+    Debug=>$config->{'DEBUG'}
+);
+
 if (defined $nntp){
     $nntp->quit;
-    if ($reportwhich eq "success"){
-	print "Connection to ${host} succeeded in less than ${timeout} secs!\n";
+    if ($config->{'reportwhich'} eq "success"){
+	notify("crit", "Connection to $config->{'host'} succeeded in less than $config->{'timeout'} secs!");
     }
 } else {
-    if ($reportwhich eq "failure"){
-	print "Connection to ${host} timed out in ${timeout} secs\n";
+    if ($config->{'reportwhich'} eq "failure"){
+	notify("crit", "Connection to $config->{'host'} timed out in $config->{'timeout'} secs");
     }
 }
+closelog();
